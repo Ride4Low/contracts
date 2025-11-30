@@ -10,8 +10,8 @@ service TripService {
 
 message PreviewTripRequest {
   string userID = 1;
-  Coordinate startLocation = 2;
-  Coordinate endLocation = 3;
+  Coordinate pickupLocation = 2;
+  Coordinate dropoffLocation = 3;
 }
 
 message PreviewTripResponse {

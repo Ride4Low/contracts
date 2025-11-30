@@ -22,12 +22,12 @@ const (
 )
 
 type PreviewTripRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserID        string                 `protobuf:"bytes,1,opt,name=userID,proto3" json:"userID,omitempty"`
-	StartLocation *Coordinate            `protobuf:"bytes,2,opt,name=startLocation,proto3" json:"startLocation,omitempty"`
-	EndLocation   *Coordinate            `protobuf:"bytes,3,opt,name=endLocation,proto3" json:"endLocation,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	UserID          string                 `protobuf:"bytes,1,opt,name=userID,proto3" json:"userID,omitempty"`
+	PickupLocation  *Coordinate            `protobuf:"bytes,2,opt,name=pickupLocation,proto3" json:"pickupLocation,omitempty"`
+	DropoffLocation *Coordinate            `protobuf:"bytes,3,opt,name=dropoffLocation,proto3" json:"dropoffLocation,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *PreviewTripRequest) Reset() {
@@ -67,16 +67,16 @@ func (x *PreviewTripRequest) GetUserID() string {
 	return ""
 }
 
-func (x *PreviewTripRequest) GetStartLocation() *Coordinate {
+func (x *PreviewTripRequest) GetPickupLocation() *Coordinate {
 	if x != nil {
-		return x.StartLocation
+		return x.PickupLocation
 	}
 	return nil
 }
 
-func (x *PreviewTripRequest) GetEndLocation() *Coordinate {
+func (x *PreviewTripRequest) GetDropoffLocation() *Coordinate {
 	if x != nil {
-		return x.EndLocation
+		return x.DropoffLocation
 	}
 	return nil
 }
@@ -370,11 +370,11 @@ var File_trip_proto protoreflect.FileDescriptor
 const file_trip_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"trip.proto\x12\x04trip\"\x98\x01\n" +
+	"trip.proto\x12\x04trip\"\xa2\x01\n" +
 	"\x12PreviewTripRequest\x12\x16\n" +
-	"\x06userID\x18\x01 \x01(\tR\x06userID\x126\n" +
-	"\rstartLocation\x18\x02 \x01(\v2\x10.trip.CoordinateR\rstartLocation\x122\n" +
-	"\vendLocation\x18\x03 \x01(\v2\x10.trip.CoordinateR\vendLocation\"~\n" +
+	"\x06userID\x18\x01 \x01(\tR\x06userID\x128\n" +
+	"\x0epickupLocation\x18\x02 \x01(\v2\x10.trip.CoordinateR\x0epickupLocation\x12:\n" +
+	"\x0fdropoffLocation\x18\x03 \x01(\v2\x10.trip.CoordinateR\x0fdropoffLocation\"~\n" +
 	"\x13PreviewTripResponse\x12\x16\n" +
 	"\x06tripID\x18\x01 \x01(\tR\x06tripID\x12!\n" +
 	"\x05route\x18\x02 \x01(\v2\v.trip.RouteR\x05route\x12,\n" +
@@ -419,8 +419,8 @@ var file_trip_proto_goTypes = []any{
 	(*RideFare)(nil),            // 5: trip.RideFare
 }
 var file_trip_proto_depIdxs = []int32{
-	2, // 0: trip.PreviewTripRequest.startLocation:type_name -> trip.Coordinate
-	2, // 1: trip.PreviewTripRequest.endLocation:type_name -> trip.Coordinate
+	2, // 0: trip.PreviewTripRequest.pickupLocation:type_name -> trip.Coordinate
+	2, // 1: trip.PreviewTripRequest.dropoffLocation:type_name -> trip.Coordinate
 	3, // 2: trip.PreviewTripResponse.route:type_name -> trip.Route
 	5, // 3: trip.PreviewTripResponse.rideFares:type_name -> trip.RideFare
 	4, // 4: trip.Route.geometry:type_name -> trip.Geometry
