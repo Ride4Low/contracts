@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ride4Low/contracts/env"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -48,10 +49,28 @@ func NewMongoClient(cfg *MongoConfig) (*mongo.Client, error) {
 	if err := client.Ping(ctx, nil); err != nil {
 		return nil, err
 	}
+
+	err = CreateTTLIndex(ctx, GetDatabase(client, cfg.Database))
+	if err != nil {
+		return nil, err
+	}
 	log.Printf("Successfully connected to MongoDB at %s", cfg.URI)
 	return client, nil
 }
 
 func GetDatabase(client *mongo.Client, database string) *mongo.Database {
 	return client.Database(database)
+}
+
+func CreateTTLIndex(ctx context.Context, db *mongo.Database) error {
+	// Create TTL index that expires documents after 2 hours (7200 seconds)
+	indexModel := mongo.IndexModel{
+		Keys: bson.M{
+			"created_at": 1, // index on the created_at field
+		},
+		Options: options.Index().SetExpireAfterSeconds(7200), // 2 hours TTL
+	}
+
+	_, err := db.Collection(RideFaresCollection).Indexes().CreateOne(ctx, indexModel)
+	return err
 }
