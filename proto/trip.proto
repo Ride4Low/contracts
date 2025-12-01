@@ -6,6 +6,7 @@ option go_package = "github.com/sithu-go/ride-share/contracts/proto/trip";
 
 service TripService {
   rpc PreviewTrip (PreviewTripRequest) returns (PreviewTripResponse);
+  rpc CreateTrip(CreateTripRequest) returns (CreateTripResponse);
 }
 
 message PreviewTripRequest {
@@ -18,6 +19,16 @@ message PreviewTripResponse {
   string tripID = 1;
   Route route = 2;
   repeated RideFare rideFares = 3;
+}
+
+message CreateTripRequest {
+  string rideFareID = 1;
+  string userID = 2;
+}
+
+message CreateTripResponse {
+  string tripID = 1;
+  Trip trip = 2;
 }
 
 message Coordinate {
@@ -40,4 +51,20 @@ message RideFare {
   string userID = 2;
   string packageSlug = 3;
   double totalPriceInCents = 4;
+}
+
+message Trip {
+  string id = 1;
+  RideFare selectedFare = 2;
+  Route route = 3;
+  string status = 4;
+  string userID = 5;
+  TripDriver driver = 6;
+}
+
+message TripDriver {
+  string id = 1;
+  string name = 2;
+  string profilePicture = 3;
+  string carPlate = 4;
 }
