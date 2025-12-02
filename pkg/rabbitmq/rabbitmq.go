@@ -8,10 +8,7 @@ import (
 	"github.com/bytedance/sonic"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/ride4Low/contracts/events"
-)
-
-const (
-	TripExchange = "trip"
+	"github.com/ride4Low/contracts/messaging"
 )
 
 type RabbitMQ struct {
@@ -57,7 +54,7 @@ func (r *RabbitMQ) Close() error {
 
 func (r *RabbitMQ) setupExchangesAndQueues() error {
 	if err := r.Channel.ExchangeDeclare(
-		TripExchange,
+		messaging.TripExchange,
 		amqp.ExchangeTopic,
 		true,
 		false,
@@ -69,8 +66,8 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 	}
 
 	r.declareAndBindQueue(
-		events.FindAvailableDriversQueue,
-		TripExchange,
+		messaging.FindAvailableDriversQueue,
+		messaging.TripExchange,
 		[]string{events.TripEventCreated},
 	)
 
@@ -105,7 +102,7 @@ func (r *RabbitMQ) declareAndBindQueue(queueName string, exchangeName string, ro
 	return nil
 }
 
-func (r *RabbitMQ) PublishMessage(ctx context.Context, routingKey string, message events.AmqpMessage) error {
+func (r *RabbitMQ) PublishMessage(ctx context.Context, routingKey string, message messaging.AmqpMessage) error {
 	log.Printf("Publishing message with routing key: %s", routingKey)
 
 	jsonMsg, err := sonic.Marshal(message)
@@ -119,7 +116,7 @@ func (r *RabbitMQ) PublishMessage(ctx context.Context, routingKey string, messag
 		DeliveryMode: amqp.Persistent,
 	}
 
-	return r.publish(ctx, TripExchange, routingKey, msg)
+	return r.publish(ctx, messaging.TripExchange, routingKey, msg)
 }
 
 func (r *RabbitMQ) publish(ctx context.Context, exchange, routingKey string, msg amqp.Publishing) error {
