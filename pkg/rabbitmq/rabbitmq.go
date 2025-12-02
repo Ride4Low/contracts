@@ -1,8 +1,11 @@
 package rabbitmq
 
 import (
+	"context"
 	"fmt"
+	"log"
 
+	"github.com/bytedance/sonic"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/ride4Low/contracts/events"
 )
@@ -100,4 +103,31 @@ func (r *RabbitMQ) declareAndBindQueue(queueName string, exchangeName string, ro
 	}
 
 	return nil
+}
+
+func (r *RabbitMQ) PublishMessage(ctx context.Context, routingKey string, message events.AmqpMessage) error {
+	log.Printf("Publishing message with routing key: %s", routingKey)
+
+	jsonMsg, err := sonic.Marshal(message)
+	if err != nil {
+		return fmt.Errorf("failed to marshal message: %v", err)
+	}
+
+	msg := amqp.Publishing{
+		ContentType:  "application/json",
+		Body:         jsonMsg,
+		DeliveryMode: amqp.Persistent,
+	}
+
+	return r.publish(ctx, TripExchange, routingKey, msg)
+}
+
+func (r *RabbitMQ) publish(ctx context.Context, exchange, routingKey string, msg amqp.Publishing) error {
+	return r.Channel.PublishWithContext(ctx,
+		exchange,   // exchange
+		routingKey, // routing key
+		false,      // mandatory
+		false,      // immediate
+		msg,
+	)
 }

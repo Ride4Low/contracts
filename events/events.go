@@ -1,8 +1,10 @@
 package events
 
+import "github.com/ride4Low/contracts/proto/trip"
+
 type AmqpMessage struct {
 	OwnerID string `json:"ownerId"`
-	Data    []byte `json:"data"`
+	Data    any    `json:"data"`
 }
 
 // queues
@@ -14,3 +16,7 @@ const (
 const (
 	TripEventCreated = "trip.event.created"
 )
+
+type TripEventData struct {
+	Trip *trip.Trip `json:"trip"`
+}
