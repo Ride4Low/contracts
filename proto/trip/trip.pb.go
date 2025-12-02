@@ -675,7 +675,7 @@ const file_trip_proto_rawDesc = "" +
 	"\vTripService\x12B\n" +
 	"\vPreviewTrip\x12\x18.trip.PreviewTripRequest\x1a\x19.trip.PreviewTripResponse\x12?\n" +
 	"\n" +
-	"CreateTrip\x12\x17.trip.CreateTripRequest\x1a\x18.trip.CreateTripResponseB5Z3github.com/sithu-go/ride-share/contracts/proto/tripb\x06proto3"
+	"CreateTrip\x12\x17.trip.CreateTripRequest\x1a\x18.trip.CreateTripResponseB*Z(github.com/ride4Low/contracts/proto/tripb\x06proto3"
 
 var (
 	file_trip_proto_rawDescOnce sync.Once

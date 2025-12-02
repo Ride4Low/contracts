@@ -1,7 +1,7 @@
 PROTO_DIR := ./proto
 PROTO_SRC := $(wildcard $(PROTO_DIR)/*.proto)
 GO_OUT := .
-MODULE := github.com/sithu-go/ride-share/contracts
+MODULE := github.com/ride4Low/contracts
 
 .PHONY: generate-proto
 generate-proto:
