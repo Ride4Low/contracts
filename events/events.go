@@ -33,3 +33,10 @@ const (
 type TripEventData struct {
 	Trip *trip.Trip `json:"trip"`
 }
+
+// WS Events
+
+const (
+	// DriverWSRegister = "driver.ws.register"
+	DriverCmdRegister = "driver.cmd.register"
+)
