@@ -66,12 +66,32 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 		return fmt.Errorf("failed to declare exchange: %v", err)
 	}
 
-	if err := r.declareAndBindQueue(
-		events.FindAvailableDriversQueue,
-		TripExchange,
-		[]string{events.TripEventCreated},
-	); err != nil {
-		return fmt.Errorf("failed to declare and bind queue: %v", err)
+	var queuesAndRoutingKeys = []struct {
+		queueName  string
+		routingKey []string
+	}{
+		{
+			queueName:  events.FindAvailableDriversQueue,
+			routingKey: []string{events.TripEventCreated},
+		},
+		{
+			queueName:  events.NotifyDriverNoDriversFoundQueue,
+			routingKey: []string{events.TripEventNoDriversFound},
+		},
+		{
+			queueName:  events.DriverCmdTripRequestQueue,
+			routingKey: []string{events.DriverCmdTripRequest},
+		},
+	}
+
+	for _, queue := range queuesAndRoutingKeys {
+		if err := r.declareAndBindQueue(
+			queue.queueName,
+			TripExchange,
+			queue.routingKey,
+		); err != nil {
+			return fmt.Errorf("failed to declare and bind queue: %v", err)
+		}
 	}
 
 	return nil
