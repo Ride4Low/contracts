@@ -1,11 +1,15 @@
 package events
 
-import "github.com/ride4Low/contracts/proto/trip"
+import (
+	"encoding/json"
+
+	"github.com/ride4Low/contracts/proto/trip"
+)
 
 // AmqpMessage is the standard message format for RabbitMQ messages
 type AmqpMessage struct {
-	OwnerID string `json:"ownerId"`
-	Data    any    `json:"data"`
+	OwnerID string          `json:"ownerId"`
+	Data    json.RawMessage `json:"data"`
 }
 
 // Queue names
