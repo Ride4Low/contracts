@@ -19,6 +19,7 @@ const (
 	NotifyDriverNoDriversFoundQueue = "notify_driver_no_drivers_found"
 	DriverCmdTripRequestQueue       = "driver_cmd_trip_request"
 	DriverTripResponseQueue         = "driver_trip_response"
+	NotifyDriverAssignQueue         = "notify_driver_assign"
 )
 
 // Event type constants
@@ -27,6 +28,7 @@ const (
 	TripEventCreated             = "trip.event.created"
 	TripEventNoDriversFound      = "trip.event.no_drivers_found"
 	TripEventDriverNotInterested = "trip.event.driver_not_interested"
+	TripEventDriverAssigned      = "trip.event.driver_assigned"
 
 	// Driver commands (driver.cmd.*)
 	DriverCmdTripRequest = "driver.cmd.trip_request"
