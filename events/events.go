@@ -20,6 +20,7 @@ const (
 	DriverCmdTripRequestQueue       = "driver_cmd_trip_request"
 	DriverTripResponseQueue         = "driver_trip_response"
 	NotifyDriverAssignQueue         = "notify_driver_assign"
+	PaymentTripResponseQueue        = "payment_trip_response"
 )
 
 // Event type constants
@@ -35,6 +36,9 @@ const (
 	DriverCmdTripAccept  = "driver.cmd.trip_accept"
 	DriverCmdTripDecline = "driver.cmd.trip_decline"
 	DriverCmdLocation    = "driver.cmd.location"
+
+	// Payment commands (payment.cmd.*)
+	PaymentCmdCreateSession = "payment.cmd.create_session"
 )
 
 // TripEventData is the payload for trip-related events
@@ -53,3 +57,11 @@ const (
 	// DriverWSRegister = "driver.ws.register"
 	DriverCmdRegister = "driver.cmd.register"
 )
+
+type PaymentTripResponseData struct {
+	TripID   string  `json:"tripID"`
+	UserID   string  `json:"userID"`
+	DriverID string  `json:"driverID"`
+	Amount   float64 `json:"amount"`
+	Currency string  `json:"currency"`
+}
