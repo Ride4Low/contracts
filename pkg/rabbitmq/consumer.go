@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
+	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -54,18 +55,28 @@ func (c *Consumer) Consume(ctx context.Context, queueName string) error {
 		return fmt.Errorf("failed to consume messages: %v", err)
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case msg := <-msgs:
-			if err := c.handler.Handle(ctx, msg); err != nil {
-				fmt.Printf("Failed to handle message: %v\n", err)
-				msg.Nack(false, false) // Don't requeue the message
-			} else {
-				msg.Ack(false)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				log.Println("Consumer stopped")
+				return
+			case msg, ok := <-msgs:
+				if !ok {
+					log.Println("Channel closed")
+					return
+				}
+
+				if err := c.handler.Handle(ctx, msg); err != nil {
+					fmt.Printf("Failed to handle message: %v\n", err)
+					msg.Nack(false, false) // Don't requeue the message
+				} else {
+					msg.Ack(false)
+				}
 			}
 		}
-	}
+	}()
+
+	return nil
 
 }
