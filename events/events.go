@@ -3,6 +3,7 @@ package events
 import (
 	"encoding/json"
 
+	"github.com/ride4Low/contracts/proto/driver"
 	"github.com/ride4Low/contracts/proto/trip"
 )
 
@@ -23,8 +24,9 @@ const (
 // Event type constants
 const (
 	// Trip events (trip.event.*)
-	TripEventCreated        = "trip.event.created"
-	TripEventNoDriversFound = "trip.event.no_drivers_found"
+	TripEventCreated             = "trip.event.created"
+	TripEventNoDriversFound      = "trip.event.no_drivers_found"
+	TripEventDriverNotInterested = "trip.event.driver_not_interested"
 
 	// Driver commands (driver.cmd.*)
 	DriverCmdTripRequest = "driver.cmd.trip_request"
@@ -38,8 +40,13 @@ type TripEventData struct {
 	Trip *trip.Trip `json:"trip"`
 }
 
-// WS Events
+type DriverTripResponseData struct {
+	Driver  *driver.Driver `json:"driver"`
+	TripID  string         `json:"tripID"`
+	RiderID string         `json:"riderID"`
+}
 
+// WS Events
 const (
 	// DriverWSRegister = "driver.ws.register"
 	DriverCmdRegister = "driver.cmd.register"

@@ -72,7 +72,7 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 	}{
 		{
 			queueName:  events.FindAvailableDriversQueue,
-			routingKey: []string{events.TripEventCreated},
+			routingKey: []string{events.TripEventCreated, events.TripEventDriverNotInterested},
 		},
 		{
 			queueName:  events.NotifyDriverNoDriversFoundQueue,
