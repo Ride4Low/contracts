@@ -17,6 +17,7 @@ const (
 	FindAvailableDriversQueue       = "find_available_drivers"
 	NotifyDriverNoDriversFoundQueue = "notify_driver_no_drivers_found"
 	DriverCmdTripRequestQueue       = "driver_cmd_trip_request"
+	DriverTripResponseQueue         = "driver_trip_response"
 )
 
 // Event type constants
@@ -27,6 +28,9 @@ const (
 
 	// Driver commands (driver.cmd.*)
 	DriverCmdTripRequest = "driver.cmd.trip_request"
+	DriverCmdTripAccept  = "driver.cmd.trip_accept"
+	DriverCmdTripDecline = "driver.cmd.trip_decline"
+	DriverCmdLocation    = "driver.cmd.location"
 )
 
 // TripEventData is the payload for trip-related events

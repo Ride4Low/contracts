@@ -82,6 +82,10 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 			queueName:  events.DriverCmdTripRequestQueue,
 			routingKey: []string{events.DriverCmdTripRequest},
 		},
+		{
+			queueName:  events.DriverTripResponseQueue,
+			routingKey: []string{events.DriverCmdTripAccept, events.DriverCmdTripDecline},
+		},
 	}
 
 	for _, queue := range queuesAndRoutingKeys {
