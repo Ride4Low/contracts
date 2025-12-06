@@ -94,6 +94,10 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 			queueName:  events.PaymentTripResponseQueue,
 			routingKey: []string{events.PaymentCmdCreateSession},
 		},
+		{
+			queueName:  events.NotifyPaymentSessionCreatedQueue,
+			routingKey: []string{events.PaymentEventSessionCreated},
+		},
 	}
 
 	for _, queue := range queuesAndRoutingKeys {

@@ -15,12 +15,13 @@ type AmqpMessage struct {
 
 // Queue names
 const (
-	FindAvailableDriversQueue       = "find_available_drivers"
-	NotifyDriverNoDriversFoundQueue = "notify_driver_no_drivers_found"
-	DriverCmdTripRequestQueue       = "driver_cmd_trip_request"
-	DriverTripResponseQueue         = "driver_trip_response"
-	NotifyDriverAssignQueue         = "notify_driver_assign"
-	PaymentTripResponseQueue        = "payment_trip_response"
+	FindAvailableDriversQueue        = "find_available_drivers"
+	NotifyDriverNoDriversFoundQueue  = "notify_driver_no_drivers_found"
+	DriverCmdTripRequestQueue        = "driver_cmd_trip_request"
+	DriverTripResponseQueue          = "driver_trip_response"
+	NotifyDriverAssignQueue          = "notify_driver_assign"
+	PaymentTripResponseQueue         = "payment_trip_response"
+	NotifyPaymentSessionCreatedQueue = "notify_payment_session_created"
 )
 
 // Event type constants
@@ -39,6 +40,9 @@ const (
 
 	// Payment commands (payment.cmd.*)
 	PaymentCmdCreateSession = "payment.cmd.create_session"
+
+	// Payment events (payment.event.*)
+	PaymentEventSessionCreated = "payment.event.session_created"
 )
 
 // TripEventData is the payload for trip-related events
@@ -64,4 +68,11 @@ type PaymentTripResponseData struct {
 	DriverID string  `json:"driverID"`
 	Amount   float64 `json:"amount"`
 	Currency string  `json:"currency"`
+}
+
+type PaymentEventSessionCreatedData struct {
+	TripID    string  `json:"tripID"`
+	SessionID string  `json:"sessionID"`
+	Amount    float64 `json:"amount"`
+	Currency  string  `json:"currency"`
 }
