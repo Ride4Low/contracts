@@ -22,6 +22,7 @@ const (
 	NotifyDriverAssignQueue          = "notify_driver_assign"
 	PaymentTripResponseQueue         = "payment_trip_response"
 	NotifyPaymentSessionCreatedQueue = "notify_payment_session_created"
+	NotifyPaymentSuccessQueue        = "notify_payment_success"
 )
 
 // Event type constants
@@ -43,6 +44,7 @@ const (
 
 	// Payment events (payment.event.*)
 	PaymentEventSessionCreated = "payment.event.session_created"
+	PaymentEventSuccess        = "payment.event.success"
 )
 
 // TripEventData is the payload for trip-related events
@@ -75,4 +77,10 @@ type PaymentEventSessionCreatedData struct {
 	SessionID string  `json:"sessionID"`
 	Amount    float64 `json:"amount"`
 	Currency  string  `json:"currency"`
+}
+
+type PaymentStatusUpdateData struct {
+	TripID   string `json:"tripID"`
+	UserID   string `json:"userID"`
+	DriverID string `json:"driverID"`
 }
