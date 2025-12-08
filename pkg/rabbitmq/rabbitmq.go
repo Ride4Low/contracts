@@ -9,7 +9,8 @@ import (
 
 // Exchange names
 const (
-	TripExchange = "trip"
+	TripExchange       = "trip"
+	DeadLetterExchange = "dlx"
 )
 
 type RabbitMQ struct {
@@ -53,7 +54,49 @@ func (r *RabbitMQ) Close() error {
 	return nil
 }
 
+func (r *RabbitMQ) setupDeadLetterExchangeAndQueue() error {
+	if err := r.Channel.ExchangeDeclare(
+		DeadLetterExchange,
+		amqp.ExchangeTopic,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	); err != nil {
+		return fmt.Errorf("failed to declare exchange: %v", err)
+	}
+
+	q, err := r.Channel.QueueDeclare(
+		events.DeadLetterQueue,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to declare queue: %v", err)
+	}
+
+	if err := r.Channel.QueueBind(
+		q.Name,
+		"#", // wildcard routing key to catch all messages
+		DeadLetterExchange,
+		false,
+		nil,
+	); err != nil {
+		return fmt.Errorf("failed to bind queue: %v", err)
+	}
+
+	return nil
+}
+
 func (r *RabbitMQ) setupExchangesAndQueues() error {
+	if err := r.setupDeadLetterExchangeAndQueue(); err != nil {
+		return fmt.Errorf("failed to setup dead letter exchange and queue: %v", err)
+	}
+
 	if err := r.Channel.ExchangeDeclare(
 		TripExchange,
 		amqp.ExchangeTopic,
@@ -118,13 +161,18 @@ func (r *RabbitMQ) setupExchangesAndQueues() error {
 }
 
 func (r *RabbitMQ) declareAndBindQueue(queueName string, exchangeName string, routingKey []string) error {
+	// Add dead letter configuration
+	args := amqp.Table{
+		"x-dead-letter-exchange": DeadLetterExchange,
+	}
+
 	q, err := r.Channel.QueueDeclare(
 		queueName, // name
 		true,      // durable
 		false,     // delete when unused
 		false,     // exclusive
 		false,     // no-wait
-		nil,       // arguments with DLX config
+		args,      // arguments with DLX config
 	)
 	if err != nil {
 		return fmt.Errorf("failed to declare queue: %v", err)

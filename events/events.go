@@ -23,6 +23,7 @@ const (
 	PaymentTripResponseQueue         = "payment_trip_response"
 	NotifyPaymentSessionCreatedQueue = "notify_payment_session_created"
 	NotifyPaymentSuccessQueue        = "notify_payment_success"
+	DeadLetterQueue                  = "dead_letter"
 )
 
 // Event type constants
