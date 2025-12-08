@@ -141,6 +141,11 @@ func (r *RabbitMQ) declareAndBindQueue(queueName string, exchangeName string, ro
 		args = amqp.Table{
 			"x-dead-letter-exchange": DeadLetterExchange,
 		}
+	} else {
+		args = amqp.Table{
+			"x-message-ttl": 86400000, // 1 day in milliseconds
+			// "x-message-ttl": 60000, // 1 minute
+		}
 	}
 
 	q, err := r.Channel.QueueDeclare(
