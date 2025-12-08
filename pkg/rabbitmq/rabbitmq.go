@@ -43,127 +43,104 @@ func NewRabbitMQ(uri string) (*RabbitMQ, error) {
 }
 
 func (r *RabbitMQ) Close() error {
+	var errs []error
 	if err := r.Channel.Close(); err != nil {
-		return fmt.Errorf("failed to close channel: %v", err)
+		errs = append(errs, fmt.Errorf("failed to close channel: %v", err))
 	}
 
 	if err := r.conn.Close(); err != nil {
-		return fmt.Errorf("failed to close connection: %v", err)
+		errs = append(errs, fmt.Errorf("failed to close connection: %v", err))
 	}
 
-	return nil
-}
-
-func (r *RabbitMQ) setupDeadLetterExchangeAndQueue() error {
-	if err := r.Channel.ExchangeDeclare(
-		DeadLetterExchange,
-		amqp.ExchangeTopic,
-		true,
-		false,
-		false,
-		false,
-		nil,
-	); err != nil {
-		return fmt.Errorf("failed to declare exchange: %v", err)
-	}
-
-	q, err := r.Channel.QueueDeclare(
-		events.DeadLetterQueue,
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to declare queue: %v", err)
-	}
-
-	if err := r.Channel.QueueBind(
-		q.Name,
-		"#", // wildcard routing key to catch all messages
-		DeadLetterExchange,
-		false,
-		nil,
-	); err != nil {
-		return fmt.Errorf("failed to bind queue: %v", err)
+	if len(errs) > 0 {
+		return fmt.Errorf("errors closing rabbitmq: %v", errs)
 	}
 
 	return nil
 }
 
 func (r *RabbitMQ) setupExchangesAndQueues() error {
-	if err := r.setupDeadLetterExchangeAndQueue(); err != nil {
-		return fmt.Errorf("failed to setup dead letter exchange and queue: %v", err)
-	}
-
-	if err := r.Channel.ExchangeDeclare(
-		TripExchange,
-		amqp.ExchangeTopic,
-		true,
-		false,
-		false,
-		false,
-		nil,
-	); err != nil {
-		return fmt.Errorf("failed to declare exchange: %v", err)
-	}
-
-	var queuesAndRoutingKeys = []struct {
-		queueName  string
-		routingKey []string
+	var topology = map[string][]struct {
+		queueName   string
+		routingKeys []string
 	}{
-		{
-			queueName:  events.FindAvailableDriversQueue,
-			routingKey: []string{events.TripEventCreated, events.TripEventDriverNotInterested},
+		DeadLetterExchange: {
+			{
+				queueName:   events.DeadLetterQueue,
+				routingKeys: []string{"#"}, // wildcard routing key to catch all messages
+			},
 		},
-		{
-			queueName:  events.NotifyDriverNoDriversFoundQueue,
-			routingKey: []string{events.TripEventNoDriversFound},
-		},
-		{
-			queueName:  events.DriverCmdTripRequestQueue,
-			routingKey: []string{events.DriverCmdTripRequest},
-		},
-		{
-			queueName:  events.DriverTripResponseQueue,
-			routingKey: []string{events.DriverCmdTripAccept, events.DriverCmdTripDecline},
-		},
-		{
-			queueName:  events.NotifyDriverAssignQueue,
-			routingKey: []string{events.TripEventDriverAssigned},
-		},
-		{
-			queueName:  events.PaymentTripResponseQueue,
-			routingKey: []string{events.PaymentCmdCreateSession},
-		},
-		{
-			queueName:  events.NotifyPaymentSessionCreatedQueue,
-			routingKey: []string{events.PaymentEventSessionCreated},
-		},
-		{
-			queueName:  events.NotifyPaymentSuccessQueue,
-			routingKey: []string{events.PaymentEventSuccess},
+		TripExchange: {
+			{
+				queueName:   events.FindAvailableDriversQueue,
+				routingKeys: []string{events.TripEventCreated, events.TripEventDriverNotInterested},
+			},
+			{
+				queueName:   events.NotifyDriverNoDriversFoundQueue,
+				routingKeys: []string{events.TripEventNoDriversFound},
+			},
+			{
+				queueName:   events.DriverCmdTripRequestQueue,
+				routingKeys: []string{events.DriverCmdTripRequest},
+			},
+			{
+				queueName:   events.DriverTripResponseQueue,
+				routingKeys: []string{events.DriverCmdTripAccept, events.DriverCmdTripDecline},
+			},
+			{
+				queueName:   events.NotifyDriverAssignQueue,
+				routingKeys: []string{events.TripEventDriverAssigned},
+			},
+			{
+				queueName:   events.PaymentTripResponseQueue,
+				routingKeys: []string{events.PaymentCmdCreateSession},
+			},
+			{
+				queueName:   events.NotifyPaymentSessionCreatedQueue,
+				routingKeys: []string{events.PaymentEventSessionCreated},
+			},
+			{
+				queueName:   events.NotifyPaymentSuccessQueue,
+				routingKeys: []string{events.PaymentEventSuccess},
+			},
 		},
 	}
 
-	for _, queue := range queuesAndRoutingKeys {
-		if err := r.declareAndBindQueue(
-			queue.queueName,
-			TripExchange,
-			queue.routingKey,
+	for exchange, queues := range topology {
+		if err := r.Channel.ExchangeDeclare(
+			exchange,
+			amqp.ExchangeTopic,
+			true,
+			false,
+			false,
+			false,
+			nil,
 		); err != nil {
-			return fmt.Errorf("failed to declare and bind queue: %v", err)
+			return fmt.Errorf("failed to declare exchange: %v", err)
+		}
+
+		for _, queueAndRoutingKeys := range queues {
+			if err := r.declareAndBindQueue(
+				queueAndRoutingKeys.queueName,
+				exchange,
+				queueAndRoutingKeys.routingKeys,
+			); err != nil {
+				return fmt.Errorf("failed to declare and bind queue: %v", err)
+			}
 		}
 	}
 
 	return nil
 }
 
-func (r *RabbitMQ) declareAndBindQueue(queueName string, exchangeName string, routingKey []string) error {
+func (r *RabbitMQ) declareAndBindQueue(queueName string, exchangeName string, routingKeys []string) error {
 	// Add dead letter configuration
-	args := amqp.Table{
-		"x-dead-letter-exchange": DeadLetterExchange,
+	var args amqp.Table
+
+	if queueName != events.DeadLetterQueue {
+		args = amqp.Table{
+			"x-dead-letter-exchange": DeadLetterExchange,
+		}
 	}
 
 	q, err := r.Channel.QueueDeclare(
@@ -178,7 +155,7 @@ func (r *RabbitMQ) declareAndBindQueue(queueName string, exchangeName string, ro
 		return fmt.Errorf("failed to declare queue: %v", err)
 	}
 
-	for _, key := range routingKey {
+	for _, key := range routingKeys {
 		if err := r.Channel.QueueBind(
 			q.Name,
 			key,
