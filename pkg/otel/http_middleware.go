@@ -1,6 +1,7 @@
 package otel
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,8 +10,15 @@ import (
 )
 
 // NewHTTPHandler wraps an http.Handler with OpenTelemetry instrumentation.
-func NewHTTPHandler(handler http.Handler, operation string) http.Handler {
-	return otelhttp.NewHandler(handler, operation)
+func OTelOperationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		operation := fmt.Sprintf("%s %s", r.Method, r.URL.Path)
+
+		// Wrap the next handler with otelhttp using the generated operation name
+		otelHandler := otelhttp.NewHandler(next, operation)
+
+		otelHandler.ServeHTTP(w, r)
+	})
 }
 
 // GinMiddleware returns a Gin middleware that adds OpenTelemetry tracing.
