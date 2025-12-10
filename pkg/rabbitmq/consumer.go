@@ -6,6 +6,9 @@ import (
 	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // Consumer represents a RabbitMQ consumer
@@ -67,12 +70,25 @@ func (c *Consumer) Consume(ctx context.Context, queueName string) error {
 					return
 				}
 
+				// Extract the context from the headers
+				ctx := otel.GetTextMapPropagator().Extract(ctx, AMQPHeadersCarrier(msg.Headers))
+				tr := otel.Tracer("rabbitmq")
+				ctx, span := tr.Start(ctx, "rabbitmq.consume",
+					trace.WithAttributes(
+						// attribute.String("messaging.system", "rabbitmq"),
+						attribute.String("messaging.destination", queueName),
+						attribute.String("messaging.routing_key", msg.RoutingKey),
+					),
+				)
+
 				if err := c.handler.Handle(ctx, msg); err != nil {
 					fmt.Printf("Failed to handle message: %v\n", err)
+					span.RecordError(err)
 					msg.Nack(false, false) // Don't requeue the message
 				} else {
 					msg.Ack(false)
 				}
+				span.End()
 			}
 		}
 	}()
