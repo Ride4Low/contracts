@@ -10,6 +10,7 @@ import (
 	"github.com/ride4Low/contracts/events"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -53,7 +54,7 @@ func (p *Publisher) PublishMessage(ctx context.Context, routingKey string, messa
 
 	if err = p.rmq.publish(ctx, TripExchange, routingKey, msg); err != nil {
 		span.RecordError(err)
-		// span.SetStatus(codes.Error, err.Error())
+		span.SetStatus(codes.Error, err.Error())
 		return fmt.Errorf("failed to publish message: %v", err)
 	}
 	return nil

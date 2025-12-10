@@ -10,6 +10,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -95,9 +96,12 @@ func (c *Consumer) Consume(ctx context.Context, queueName string) error {
 
 				_, err = backoff.Retry(ctx, operation, backoff.WithBackOff(b), backoff.WithMaxTries(3))
 				if err != nil {
-					fmt.Printf("Failed to handle message: %v\n", err)
+					log.Printf("Failed to handle message: %v\n", err)
 					span.RecordError(err)
-					msg.Nack(false, false) // Don't requeue the message
+					span.SetStatus(codes.Error, err.Error())
+
+					// msg.Nack(false, false) // Don't requeue the message
+					msg.Reject(false)
 				} else {
 					msg.Ack(false)
 				}
