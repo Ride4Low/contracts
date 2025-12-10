@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -81,7 +83,18 @@ func (c *Consumer) Consume(ctx context.Context, queueName string) error {
 					),
 				)
 
-				if err := c.handler.Handle(ctx, msg); err != nil {
+				operation := func() (struct{}, error) {
+					return struct{}{}, c.handler.Handle(ctx, msg)
+				}
+
+				b := backoff.NewExponentialBackOff()
+				b.InitialInterval = 2 * time.Second
+				b.Multiplier = 2
+				b.MaxInterval = 5 * time.Second
+				b.RandomizationFactor = 0
+
+				_, err = backoff.Retry(ctx, operation, backoff.WithBackOff(b), backoff.WithMaxTries(3))
+				if err != nil {
 					fmt.Printf("Failed to handle message: %v\n", err)
 					span.RecordError(err)
 					msg.Nack(false, false) // Don't requeue the message
