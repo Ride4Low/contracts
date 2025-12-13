@@ -42,6 +42,8 @@ const (
 
 	// Payment commands (payment.cmd.*)
 	PaymentCmdCreateSession = "payment.cmd.create_session"
+	PaymentCmdSelectCard    = "payment.cmd.select_card"
+	PaymentCmdSelectCrypto  = "payment.cmd.select_crypto"
 
 	// Payment events (payment.event.*)
 	PaymentEventSessionCreated = "payment.event.session_created"
@@ -84,4 +86,9 @@ type PaymentStatusUpdateData struct {
 	TripID   string `json:"tripID"`
 	UserID   string `json:"userID"`
 	DriverID string `json:"driverID"`
+}
+
+type PaymentSelectCardData struct {
+	TripID string `json:"tripID"`
+	UserID string `json:"userID"`
 }
